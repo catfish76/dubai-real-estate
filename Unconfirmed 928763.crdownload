@@ -1,0 +1,831 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+import pandas as pd
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+import warnings
+warnings.filterwarnings("ignore")
+import itertools
+import missingno as msno
+import os
+
+
+# In[2]:
+
+
+house=pd.read_csv('C:/Users/HP/Downloads/properties_data.csv')
+
+
+# In[3]:
+
+
+house.head()
+
+
+# In[4]:
+
+
+house.columns
+
+
+# In[5]:
+
+
+list(house.columns)
+
+
+# In[6]:
+
+
+house.dtypes
+
+
+# In[7]:
+
+
+house.info()
+
+
+# In[8]:
+
+
+house.isnull().sum()
+
+
+# In[9]:
+
+
+house.duplicated().any()
+
+
+# In[10]:
+
+
+house.count()
+
+
+# In[11]:
+
+
+house.describe()
+
+
+# In[12]:
+
+
+msno.bar(house)
+
+
+# In[13]:
+
+
+sns.heatmap(house.isnull())
+
+
+# In[14]:
+
+
+house.hist()
+
+
+# In[15]:
+
+
+plt.figure(figsize=(25,25))
+sns.heatmap(house.corr(), vmin=-1,annot=True,cmap='Blues')
+#same thing can be seen from the correlation as well
+
+
+# In[16]:
+
+
+sns.countplot(house['price'])
+
+
+# In[17]:
+
+
+house.head(2)
+
+
+# In[18]:
+
+
+house.drop(columns=['id','latitude','longitude','shared_gym','shared_pool','shared_spa','study','vastu_compliant','view_of_landmark','walk_in_closet'],axis=1,inplace=True)
+
+
+# In[19]:
+
+
+house.head(2)
+
+
+# In[20]:
+
+
+house.size
+
+
+# In[21]:
+
+
+house.shape
+
+
+# In[22]:
+
+
+house.columns
+
+
+# In[23]:
+
+
+plt.figure(figsize=(25,25))
+sns.heatmap(house.corr(), vmin=-1,annot=True,cmap='Blues')
+#same thing can be seen from the correlation as well
+
+
+# In[24]:
+
+
+house.drop(columns=['security','pets_allowed','lobby_in_building','childrens_play_area','childrens_pool','networked','barbecue_area'],axis=1,inplace=True)
+
+
+# In[25]:
+
+
+house.drop(columns=['private_gym','private_garden','maid_service','private_pool','private_jacuzzi'],axis=1,inplace=True)
+
+
+# In[26]:
+
+
+house.drop(columns=['maid_room','unfurnished','balcony','built_in_wardrobes','central_ac','concierge','covered_parking','kitchen_appliances','view_of_water'],axis=1,inplace=True)
+
+
+# In[27]:
+
+
+house.head(2)
+
+
+# In[28]:
+
+
+house.columns
+
+
+# In[29]:
+
+
+house.shape
+
+
+# In[30]:
+
+
+house['price'].unique()
+
+
+# In[31]:
+
+
+sns.histplot(house['price'],kde=True,bins=15)
+
+
+# ### convert all string to float
+
+# In[32]:
+
+
+house.dtypes
+
+
+# In[33]:
+
+
+house['neighborhood'].unique()
+
+
+# In[34]:
+
+
+top5=house['neighborhood'].value_counts().nlargest(5).index
+
+
+# In[35]:
+
+
+top5
+
+
+# In[36]:
+
+
+house['neighborhood'].where(house['neighborhood'].isin(top5),'other')
+
+
+# In[37]:
+
+
+house['top5']=house['neighborhood'].where(house['neighborhood'].isin(top5),'other')
+                                                  
+                                             
+
+
+# In[38]:
+
+
+house.head()
+
+
+# In[ ]:
+
+
+
+
+
+# In[39]:
+
+
+house['quality']=house['quality'].map({'Medium':2, 'Low':1, 'High':3, 'Ultra':4})
+
+
+# In[40]:
+
+
+house['top5']=house['top5'].map({'Downtown Dubai':0,'Palm Jumeirah':1,'Dubai Marina':2,'Jumeirah Beach Residence':3,'Jumeirah Village Circle':4,'other':5})
+
+
+# In[41]:
+
+
+house['top5']
+
+
+# In[42]:
+
+
+house.head()
+
+
+# In[43]:
+
+
+house=house.drop(columns=['neighborhood'],axis=1,)
+
+
+# In[44]:
+
+
+house.head()
+
+
+# In[45]:
+
+
+X= house.drop('price',axis=1)
+
+
+# In[46]:
+
+
+y=house['price']
+
+
+# In[47]:
+
+
+X
+
+
+# In[48]:
+
+
+y
+
+
+# In[49]:
+
+
+from sklearn.model_selection import train_test_split
+
+
+# In[50]:
+
+
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.20,random_state=42)
+
+
+# In[51]:
+
+
+X_train
+
+
+# In[52]:
+
+
+y_train
+
+
+# ## FEATURE SCALEING
+
+# In[53]:
+
+
+from sklearn.preprocessing import StandardScaler
+
+
+# In[54]:
+
+
+sc=StandardScaler()
+
+
+# In[55]:
+
+
+X_train=sc.fit_transform(X_train)
+
+
+# In[56]:
+
+
+X_test=sc.fit_transform(X_test)
+
+
+# In[57]:
+
+
+X_train
+
+
+# In[58]:
+
+
+from sklearn.linear_model import LinearRegression
+from sklearn.svm import SVR
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+
+
+# In[59]:
+
+
+lr=LinearRegression()
+lr.fit(X_train,y_train)
+svm=SVR()
+svm.fit(X_train,y_train)
+rf=RandomForestRegressor()
+rf.fit(X_train,y_train)
+gr=GradientBoostingRegressor()
+gr.fit(X_train,y_train)
+
+
+# In[60]:
+
+
+y_pred1=lr.predict(X_test)
+y_pred2=svm.predict(X_test)
+y_pred3=rf.predict(X_test)
+y_pred4=gr.predict(X_test)
+
+df1=pd.DataFrame({'Actual':y_test,'lr':y_pred1,
+                 'svm':y_pred2,'rf':y_pred3,'gr':y_pred4})
+
+
+# In[61]:
+
+
+df1
+
+
+# In[62]:
+
+
+plt.subplot(221)
+plt.plot(df1['Actual'].iloc[0:11],label='Actual')
+plt.plot(df1['lr'].iloc[0:11],label='lr')
+plt.legend()
+
+
+plt.subplot(222)
+plt.plot(df1['Actual'].iloc[0:11],label='Actual')
+plt.plot(df1['svm'].iloc[0:11],label='svm')
+plt.legend()
+
+plt.subplot(223)
+plt.plot(df1['Actual'].iloc[0:11],label='Actual')
+plt.plot(df1['rf'].iloc[0:11],label='rf')
+plt.legend()
+
+plt.subplot(224)
+plt.plot(df1['Actual'].iloc[0:11],label='Actual')
+plt.plot(df1['gr'].iloc[0:11],label='gr')
+plt.legend()
+plt.tight_layout()
+
+
+# In[63]:
+
+
+from sklearn import metrics
+
+
+# In[64]:
+
+
+score1=metrics.r2_score(y_test,y_pred1)
+score2=metrics.r2_score(y_test,y_pred2)
+score3=metrics.r2_score(y_test,y_pred3)
+score4=metrics.r2_score(y_test,y_pred4)
+
+
+# In[65]:
+
+
+print (score1,score2,score3,score4)
+
+
+# In[66]:
+
+
+s1=metrics.mean_absolute_error(y_test,y_pred1)
+s2=metrics.mean_absolute_error(y_test,y_pred2)
+s3=metrics.mean_absolute_error(y_test,y_pred3)
+s4=metrics.mean_absolute_error(y_test,y_pred4)
+
+
+# In[67]:
+
+
+print(s1,s2,s3,s4)
+
+
+# In[68]:
+
+
+house.head()
+
+
+# In[69]:
+
+
+y
+
+
+# In[70]:
+
+
+from sklearn.ensemble import GradientBoostingRegressor
+
+
+# In[71]:
+
+
+gr=GradientBoostingRegressor()
+
+
+# In[72]:
+
+
+gr.fit(X,y)
+
+
+# In[73]:
+
+
+import joblib
+
+
+# In[74]:
+
+
+joblib.dump(gr,'price prediction')
+
+
+# In[75]:
+
+
+model=joblib.load('price prediction')
+
+
+# In[76]:
+
+
+X.head(2)
+
+
+# In[77]:
+
+
+model.predict([[1079,2502.32,1,2,2,1]])
+
+
+# ## GUI
+
+# In[78]:
+
+
+from tkinter import *
+
+
+# In[79]:
+
+
+import joblib
+
+
+# In[80]:
+
+
+from tkinter import messagebox
+
+
+# In[81]:
+
+
+master=Tk()
+
+
+master.geometry('400x300')
+master.minsize(200,200)
+
+
+master.mainloop()
+
+
+# In[82]:
+
+
+#ADD TITLE TO IT
+master=Tk()
+
+master.title('price prediction')
+
+master.geometry('400x300')
+master.minsize(200,200)
+
+master.mainloop()
+
+
+# In[83]:
+
+
+#LETS SET DIMENSION OF THIS WINDOW
+master=Tk()
+master.geometry('400x300')
+master.minsize(200,200)
+master.title('price prediction')
+master.mainloop()
+
+
+# In[84]:
+
+
+#LETS ADD COLOR TO THE WINDOW
+
+master=Tk()
+
+master.title('price prediction')
+
+
+master.configure(bg='lightblue')
+
+master.geometry('400x300')
+master.minsize(200,200)
+
+
+
+
+
+master.mainloop()
+
+
+# In[85]:
+
+
+master=Tk()
+master.title('price prediction')
+
+master.geometry('400x300')
+master.minsize(200,200)
+
+master.configure(bg='lightblue')
+
+
+label=Label(master,text='price prediction',font=('Arial',20,'bold'),width=10,height=1,bg='lightblue',foreground='yellow').grid(row=0,columnspan=2)
+
+Label(master,text='size_in_sqft').grid(row=1)
+Label(master,text='price_per_sqft').grid(row=2)
+Label(master,text='no_of_bedrooms').grid(row=3)
+Label(master,text='no_of_bathrooms').grid(row=4)
+Label(master,text='quality').grid(row=5)
+Label(master,text='top5').grid(row=6)
+
+
+
+
+
+
+master.mainloop()
+
+
+# In[86]:
+
+
+master=Tk()
+master.title('price prediction')
+
+master.geometry('400x300')
+master.minsize(200,200)
+
+master.configure(bg='lightblue')
+
+
+label=Label(master,text='price prediction',font=('Arial',20,'bold'),width=10,height=1,bg='lightblue',foreground='yellow').grid(row=0,columnspan=2)
+
+Label(master,text='size_in_sqft').grid(row=1)
+Label(master,text='price_per_sqft').grid(row=2)
+Label(master,text='no_of_bedrooms').grid(row=3)
+Label(master,text='no_of_bathrooms').grid(row=4)
+Label(master,text='quality').grid(row=5)
+Label(master,text='top5').grid(row=6)
+
+
+
+
+
+
+
+
+
+
+
+
+e1=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e2=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e3=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e4=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e5=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e6=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+
+
+master.mainloop()
+
+
+# In[87]:
+
+
+master=Tk()
+master.title('price prediction')
+
+master.geometry('400x300')
+master.minsize(200,200)
+
+master.configure(bg='lightblue')
+
+
+label=Label(master,text='price prediction',font=('Arial',20,'bold'),width=10,height=1,bg='lightblue',foreground='yellow').grid(row=0,columnspan=2)
+
+Label(master,text='size_in_sqft').grid(row=1)
+Label(master,text='price_per_sqft').grid(row=2)
+Label(master,text='no_of_bedrooms').grid(row=3)
+Label(master,text='no_of_bathrooms').grid(row=4)
+Label(master,text='quality').grid(row=5)
+Label(master,text='top5').grid(row=6)
+
+
+
+
+
+
+
+
+
+
+
+
+e1=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e2=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e3=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e4=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e5=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e6=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+
+e1.grid(row=1,column=1)    
+e2.grid(row=2,column=1)
+e3.grid(row=3,column=1)
+e4.grid(row=4,column=1)
+e5.grid(row=5,column=1)
+e6.grid(row=6,column=1)
+
+
+
+
+
+
+
+
+
+
+
+
+
+master.mainloop()
+
+
+# In[ ]:
+
+
+def show_entry():
+    p1=float(e1.get())
+    p2=float(e2.get())
+    p3=float(e3.get())
+    p4=float(e4.get())
+    p5=float(e5.get())
+    p6=float(e6.get())
+    
+    
+    
+    model=joblib.load('price prediction')
+    result=model.predict([[p1,p2,p3,p4,p5,p6]])
+    
+    
+   
+    Label(master,text=result).grid(row=7)
+master=Tk()
+master.title('price prediction')
+
+master.geometry('400x300')
+master.minsize(200,200)
+
+master.configure(bg='lightblue')
+ 
+label=Label(master,text='price prediction',font=('Arial',20,'bold'),width=10,height=1,bg='lightblue',foreground='yellow').grid(row=0,columnspan=2)
+    
+
+
+Label(master,text='size_in_sqft').grid(row=1)
+Label(master,text='price_per_sqft').grid(row=2)
+Label(master,text='no_of_bedrooms').grid(row=3)
+Label(master,text='no_of_bathrooms').grid(row=4)
+Label(master,text='quality').grid(row=5)
+Label(master,text='top5').grid(row=6)
+
+
+
+
+
+
+
+
+
+
+
+
+e1=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e2=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e3=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e4=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e5=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+e6=Entry(master,font=('Arial',14),bg='grey',fg='white',borderwidth=3)
+
+
+e1.grid(row=1,column=1)    
+e2.grid(row=2,column=1)
+e3.grid(row=3,column=1)
+e4.grid(row=4,column=1)
+e5.grid(row=5,column=1)
+e6.grid(row=6,column=1)
+
+
+
+
+
+
+
+
+Button(master,text='price prediction',command=show_entry,bg='pink',font=('Arial',10,'bold'),borderwidth=3,activebackground='blue').grid()
+
+
+
+
+
+master.mainloop()
+
+
+# In[ ]:
+
+
+
+
